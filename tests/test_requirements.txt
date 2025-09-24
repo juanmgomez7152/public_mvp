@@ -1,0 +1,21 @@
+# Test Requirements
+# Add these packages to your requirements.txt or install separately for testing
+
+# Core testing framework (usually included with Python)
+# unittest - included with Python
+
+# Optional testing packages for enhanced functionality
+coverage>=7.0.0          # Code coverage reporting
+pytest>=7.0.0            # Alternative test runner (optional)
+pytest-cov>=4.0.0        # pytest coverage plugin (optional)
+pytest-asyncio>=0.21.0   # pytest async support (optional)
+httpx>=0.24.0            # For async HTTP client testing (if needed)
+freezegun>=1.2.0         # For mocking datetime in tests (optional)
+
+# Mocking utilities (included with unittest.mock, but these provide more features)
+responses>=0.23.0        # Mock HTTP requests (optional)
+factory-boy>=3.2.0       # Test data factory (optional)
+
+# Test reporting
+pytest-html>=3.1.0      # HTML test reports (optional)
+pytest-xdist>=3.2.0     # Parallel test execution (optional)

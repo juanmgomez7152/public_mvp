@@ -1,4 +1,4 @@
-from app.db.sqlite_conn import sessionmaker, CompanyProfile,CampaignSuggestions,JobQueue
+from app.db.sqlite_conn import sessionmaker, CompanyProfile,CampaignSuggestions,JobQueue, engine
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 class DBTool:
