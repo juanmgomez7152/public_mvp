@@ -1,0 +1,1 @@
+from app.api.campaign_planner.campaign_planner_endpoints import router
