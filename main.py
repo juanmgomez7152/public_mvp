@@ -15,5 +15,5 @@ def read_root():
     return {"Message": "Ok 🪅"}
 
 if __name__ == "__main__":
-    populate_db()
+    populate_db() # Populate the database with mock data
     uvicorn.run("main:app", host="127.0.0.1", port=3000, reload=True)
