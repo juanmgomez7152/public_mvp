@@ -1,12 +1,13 @@
 from sqlalchemy import create_engine, Column, Integer, String, Numeric,UUID, DateTime, JSON
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker,Session
 import uuid
 from datetime import datetime
 # SQLite connection string
 DATABASE_URL = "sqlite:///./campaigns.db"
 
 engine = create_engine(DATABASE_URL)
+#using engine.pool we can manage how many engines are created and how many are reused
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 #NOTE:"""
@@ -43,5 +44,11 @@ class JobQueue(Base):# since we are sending a 202 response, we need a job queue 
     created_at = Column(DateTime, default=datetime.now())
     expires_at = Column(DateTime)  # TTL field - rows expire after this time
 
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
 # Create tables
 Base.metadata.create_all(bind=engine)

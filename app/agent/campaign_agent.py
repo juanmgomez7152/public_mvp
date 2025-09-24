@@ -7,30 +7,30 @@ from email.mime.multipart import MIMEMultipart
 from app.agent.tools.db_tool import DBTool
 from app.agent.tools.openai_tool import OpenAITool
 from app.db.sqlite_conn import CompanyProfile, CampaignSuggestions
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
-db_tool = DBTool()
-llm_toolkit = OpenAITool()
 class CampaignAgent:
-    def __init__(self):
+    def __init__(self, db: Session):
         self.email_user = os.getenv("EMAIL_USER")
         self.email_password = os.getenv("EMAIL_APP_PASSWORD")
         self.email_server = os.getenv("EMAIL_SERVER", "smtp.gmail.com")
         self.email_port = int(os.getenv("EMAIL_PORT", "587"))
-        logger.info("CampaignAgent initialized")
+        self.db_tool = DBTool(db)
+        self.llm_toolkit = OpenAITool()
 
     async def _extract_profile(self, company:str) -> CompanyProfile:
-        profile = db_tool.get_company_profile(company)
+        profile = await self.db_tool.get_company_profile(company)
         return profile
         
     
     async def _generate_suggestions(self, profile: CompanyProfile, goal: str) -> CampaignSuggestions:
-        suggestion_results = llm_toolkit.generate_campaign_ideas(profile, goal)
+        suggestion_results = self.llm_toolkit.generate_campaign_ideas(profile, goal)
         return suggestion_results
 
-    def _store_suggestions(self, company:str,suggestion_results:CampaignSuggestions, email:str) -> None:
-        db_tool.save_campaign_suggestion(suggestion_results)
-        db_tool.update_job_status(company, "completed")
+    async def _store_suggestions(self, company:str,suggestion_results:CampaignSuggestions, email:str) -> None:
+        await self.db_tool.save_campaign_suggestion(suggestion_results)
+        await self.db_tool.update_job_status(company, "completed")
         if not self._alert_completion(company, email):
             raise Exception("Failed to send email notification.")
 
@@ -62,12 +62,19 @@ class CampaignAgent:
             logger.error(f"Failed to send email notification: {e}")
             return False
         
+    async def get_campaign_suggestions(self, company_name: str) -> CampaignSuggestions:
+        suggestions = await self.db_tool.get_campaign_suggestions(company_name)
+        if not suggestions:
+            raise Exception(f"No suggestions found for company: {company_name}")
+        return suggestions.suggested_campaign
+        
     async def orchestrator(self, campaign_request: json) -> None:
         logger.info(f"Orchestrating campaign for company: {campaign_request['company_name']}")
+        await self.db_tool.load_job(campaign_request['company_name'])
         company = (campaign_request['company_name']).lower()
         campaign_goal = campaign_request['campaign_goal']
         email = (campaign_request['email']).lower()
         profile = await self._extract_profile(company)
         results = await self._generate_suggestions(profile, campaign_goal)
-        self._store_suggestions(company, results, email)
+        await self._store_suggestions(company, results, email)
         

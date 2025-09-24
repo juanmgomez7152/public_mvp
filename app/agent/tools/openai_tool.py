@@ -17,7 +17,7 @@ class OpenAITool:
         if not self.OPENAI_API_KEY:
             raise ValueError("OPENAI_API_KEY environment variable not set.")
         self.client = OpenAI(api_key=self.OPENAI_API_KEY)
-        self.MODEL_NAME = "gpt-5-mini"
+        self.MODEL_NAME = "gpt-5-nano"
 
 
     def _openai_call(self, prompt: str,text_structure: BaseModel = CampaignLLMResponse, temperature: int = 1, seed: int = 42, top_p: int = 1) -> BaseModel:
